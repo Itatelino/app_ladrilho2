@@ -43,12 +43,23 @@ class _TileCustomizationScreenState extends State<TileCustomizationScreen> {
 
   Future<void> _launchWhatsApp(String message) async {
     const String phoneNumber = '5547912345678';
-    final String url =
-        'whatsapp://send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}';
+    final Uri whatsappUri = Uri.parse(
+      'whatsapp://send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}',
+    );
 
     try {
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url));
+      if (await canLaunchUrl(whatsappUri)) {
+        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      // Fallback to web URL (works even if WhatsApp app isn't installed)
+      final Uri webUri = Uri.parse(
+        'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}',
+      );
+
+      if (await canLaunchUrl(webUri)) {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
       } else {
         setState(() {
           _message =
